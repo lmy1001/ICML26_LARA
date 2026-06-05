@@ -29,7 +29,7 @@
 
         <div class="authors" aria-label="Authors">
           <span>Mengya Liu*</span>
-          <span>Baoxiong Jia*†</span>
+          <span>Baoxiong Jia*(project lead)</span>
           <span>Jiangyong Huang</span>
           <span>Jingze Zhang</span>
           <span>Siyuan Huang</span>
@@ -39,9 +39,18 @@
         </p>
 
         <div class="actions" aria-label="Project links">
-          <a class="button primary" href="assets/ICML26_LARA.pdf">Paper</a>
-          <a class="button" href="https://github.com/lmy1001/LARA">Code</a>
-          <a class="button" href="#video">Video</a>
+          <a class="button" href="https://arxiv.org/abs/TODO_ARXIV_ID">
+            <img class="button-icon" src="https://cdn.simpleicons.org/arxiv/B31B1B" alt="" />
+            <span>Paper</span>
+          </a>
+          <a class="button" href="https://github.com/lmy1001/LARA">
+            <img class="button-icon" src="https://cdn.simpleicons.org/github/181717" alt="" />
+            <span>Code</span>
+          </a>
+          <a class="button" href="https://huggingface.co/YOUR_MODEL_PATH">
+            <img class="button-icon" src="https://cdn.simpleicons.org/huggingface/FFD21E" alt="" />
+            <span>Model</span>
+          </a>
         </div>
       </div>
     </header>
@@ -51,10 +60,10 @@
         <div class="content wide">
           <h2 id="teaser-title" class="sr-only">Teaser</h2>
           <figure class="teaser">
-            <img src="assets/teaser.jpg" alt="Task 1 pick-and-place instruction teaser frame" />
+            <img src="assets/teaser.png" alt="LARA teaser figure" />
             <figcaption>
-              LARA aligns latent visual dynamics with robot action generation for grounded,
-              language-conditioned manipulation.
+              LARA bridges unlabeled video data and action-labeled robot datasets by aligning
+              latent visual dynamics with diffusion-based action generation.
             </figcaption>
           </figure>
         </div>
@@ -64,145 +73,109 @@
         <div class="content">
           <h2>Abstract</h2>
           <p>
-            Vision-Language-Action models enable robots to predict actions directly from
-            observations and language instructions, yet their performance is constrained by the
-            scarcity of high-quality real-world robot action datasets. Latent Action Models learn
-            action representations from visual dynamics in unlabeled videos, but they are commonly
-            trained separately from VLA policies.
-          </p>
-          <p>
-            LARA introduces a plug-and-play representation alignment framework that jointly
-            optimizes the Latent Action Model and a diffusion-based VLA policy. The alignment lets
-            LAMs learn from action trajectories and helps VLA policies use forward dynamics to avoid
-            functionally ineffective action hallucinations.
+Visual-language action (VLA) models enable robots to predict actions directly from observations and language instructions, but their performance depends on large-scale, high-quality data and is limited by the scarcity of real-world robot action datasets. To facilitate VLA model learning with abundant unlabeled human videos, Latent Action Models (LAM) learn latent action representations from visual dynamics to provide additional supervision for VLA learning. However, LAM and VLA are typically trained separately, leaving LAM ungrounded during VLA training and VLA models constrained by frozen LAM representations. To address these issues, we propose Latent Action Representation Alignment (LARA), a plug-and-play framework that jointly optimizes LAM and VLA via representation alignment. This enables reciprocal benefits where LAMs learn with action trajectories to avoid spurious visual changes, while VLAs are regularized by forward dynamics learned within LAMs to reduce hallucinations of functionally ineffective trajectories. We demonstrate LARA's versatility and effectiveness for pre-training, post-training enhancement of pre-trained VLA models, and LAM refinement, achieving an average of  ~10%, ~5%, and ~15% improvement over 3 simulation and 1 meticulously designed real-world robotic manipulation benchmarks.
           </p>
         </div>
       </section>
 
       <section id="method" class="section band">
-        <div class="content">
+        <div class="content wide">
           <div class="section-heading">
-            <p class="eyebrow">Method</p>
-            <h2>Latent Action Representation Alignment</h2>
+		<h2>Method</h2>
           </div>
+
+          <figure class="paper-figure">
+            <img src="assets/method_overview.png" alt="LARA method overview diagram" />
+            <figcaption>
+              <strong>Method overview.</strong> We begin with LAM (left), where an Inverse Dynamic
+              Model (IDM) learns a latent action z_t from consecutive image frames, and a Forward
+              Dynamic Model (FDM) learns to reconstruct the subsequent frame conditioned on the
+              preceding frame and the quantized latent action z_t^q. We then conduct LARA training
+              on a diffusion-based VLA model, where LARA explicitly aligns the latent action z_t
+              with intermediate features of the Diffusion Transformer (DiT), thereby jointly
+              optimizing the LAM and VLA model in an end-to-end manner.
+            </figcaption>
+          </figure>
 
           <div class="method-grid">
             <article>
               <span class="step">1</span>
               <h3>LAM Pre-Training</h3>
               <p>
-                An inverse dynamics model encodes visual transitions into latent actions, while a
-                forward dynamics model reconstructs future observations from the current frame and
-                quantized latent action.
+                The latent action model learns a structured visual dynamics space from unlabeled
+                videos using inverse and forward dynamics objectives.
               </p>
             </article>
             <article>
               <span class="step">2</span>
-              <h3>Joint LARA Training</h3>
+              <h3>LARA Joint Training</h3>
               <p>
-                Intermediate DiT features in the VLA policy are aligned with latent action
-                representations, allowing the policy and latent action space to co-evolve.
+                The VLA policy and LAM are optimized together by aligning intermediate DiT features
+                with latent action representations.
               </p>
             </article>
             <article>
               <span class="step">3</span>
-              <h3>Post-Training & Refinement</h3>
+              <h3>Policy Enhancement</h3>
               <p>
-                The same alignment works as a post-training module for pretrained VLAs and as a
-                latent action refiner for LAM-based pseudo-labeling pipelines.
+                The same alignment mechanism supports full VLA training, post-training enhancement,
+                and latent action refinement for pseudo-labeling.
               </p>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="results" class="section">
-        <div class="content">
+
+          <section id="experiments" class="section results">
+             <div class="content wide">
           <div class="section-heading">
-            <p class="eyebrow">Results</p>
-            <h2>Consistent Gains Across Simulation and Real Robots</h2>
+		<h2>Experimental Results</h2>
           </div>
+	<h3>LARA-full model Performance in GR1 Sim and G1 Real Data</h3>
+              <p>
+	LARA(DiT-only): We pre-train a vanilla DiT model directly on OXE data without representation alignment and then post-train on target datasets.  
+	</p>
+	<p>              
+	 LARA-full model: We train the full LARA model by first pre-training the LAM model on OXE data with only reconstruction loss. This LAM is used for LARA joint pre-training on OXE-data and post-training on target datasets with an DiT initialized from scratch.
+	</p>
+	<h3> LARA posttrain model is a effective plug-and-play module.  </h3>
+	<p>
+		We evaluate LARA as a plug-and-play post-training enhancement module for existing diffusion-based VLA models (e.g., GR00T-N1.6), that's GR00T-N1.6-LARA, by applying the full LARA objective to jointly train the pre-trained GR00T-N1.6 model with anLAM on the post-training data.
+              </p>
 
-          <div class="metrics">
-            <article class="metric">
-              <strong>88.6</strong>
-              <span>LIBERO average</span>
-              <p>LARA full improves over the strongest OXE-constrained baseline.</p>
-            </article>
-            <article class="metric">
-              <strong>65.2</strong>
-              <span>SIMPLER average</span>
-              <p>Large gains on pick, move, and drawer tasks under constrained pre-training.</p>
-            </article>
-            <article class="metric">
-              <strong>74.0</strong>
-              <span>G1 real average</span>
-              <p>Real-world humanoid manipulation improves from 56.0 to 74.0.</p>
-            </article>
-            <article class="metric">
-              <strong>+15.7%</strong>
-              <span>LARA-LAM refinement</span>
-              <p>Better latent action pseudo-labels transfer to SIMPLER evaluation.</p>
-            </article>
-          </div>
-
-          <div class="figure-row">
-            <figure>
-              <img src="assets/latent-actions.png" alt="Latent action visualization frames" />
-              <figcaption>Latent action visualizations from the paper figure assets.</figcaption>
+            <figure class="paper-figure">
+              <img src="assets/real_robot.png" alt="GR1-Sim and Real robot performance" />
             </figure>
-            <figure>
-              <img src="assets/g1-pick-place.jpg" alt="Unitree G1 pick-and-place task setup" />
-              <figcaption>Real-world G1 pick-and-place benchmark.</figcaption>
-            </figure>
-            <figure>
-              <img src="assets/g1-pour.jpg" alt="Unitree G1 grasp-and-pour task setup" />
-              <figcaption>Real-world bimanual grasp-and-pour benchmark.</figcaption>
-            </figure>
-          </div>
+ 
+            <div class="result-copy">
+              <h3>LARA for Latent Action Refinement</h3>
+              <p>
+              	We conduct a direct comparison of LAM by training two distinct Moto-GPT models on the OXE Fractal dataset from scratch and testing on the SIMPLER_ENV benchmark, utilizing latent tokens from a vanilla LAM and a LARA-aligned LAM (LARA-LAM) both trained on OXE data, respectively.
+              </p>
+            </div>
+            <div class="paired-figures">
+              <figure class="paper-figure">
+                <img src="assets/lara_lam.png" alt="LARA-LAM performance results" />
+              </figure>
+              <figure class="paper-figure">
+                <img src="assets/attention_map.png" alt="Attention map visualization" />
+                <figcaption>Attention map visualization for LAM and LARA-LAM.</figcaption>
+              </figure>
+            </div>
         </div>
       </section>
 
-      <section class="section band">
+      <section id="video" class="section video">
         <div class="content">
           <div class="section-heading">
-            <p class="eyebrow">Applications</p>
-            <h2>One Alignment Mechanism, Three Uses</h2>
-          </div>
-
-          <div class="application-table" role="table" aria-label="LARA applications">
-            <div role="row">
-              <strong role="cell">Full VLA training</strong>
-              <span role="cell">LAM and VLA policy learn jointly from unlabeled videos and labeled robot actions.</span>
-            </div>
-            <div role="row">
-              <strong role="cell">Post-training enhancement</strong>
-              <span role="cell">Existing diffusion-based VLA models gain an efficient alignment stage.</span>
-            </div>
-            <div role="row">
-              <strong role="cell">Latent action refinement</strong>
-              <span role="cell">LARA-LAM produces more action-centric latent tokens for pseudo-labeling.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="video" class="section video-section">
-        <div class="content">
-          <div class="section-heading">
-            <p class="eyebrow">Video</p>
-            <h2>Rollout Demonstration</h2>
+            <h2>Real-Robot Rollout</h2>
           </div>
           <div class="video-frame">
-            <!--
-              Add the project video here before publishing, for example:
-              <video controls playsinline poster="assets/teaser.jpg">
-                <source src="assets/lara-video.mp4" type="video/mp4" />
-              </video>
-
-              Or embed a hosted video:
-              <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="LARA video" allowfullscreen></iframe>
-            -->
+            <video controls playsinline poster="assets/video.jpg">
+              <source src="assets/video.mp4" type="video/mp4" />
+              Your browser cannot play this video. Please add assets/video.mp4 encoded as H.264 MP4.
+            </video>
           </div>
         </div>
       </section>
